@@ -1,68 +1,89 @@
-# Render Blueprint — Production (DEMO_MODE=false + ClickHouse)
-# Apply: Render Dashboard → New → Blueprint → connect repo → Apply
-#
-# Cost note: ClickHouse private service needs a paid plan (~$7+/mo for disk).
-# Web service can use the free tier.
-
 services:
-  # ── ClickHouse database ──────────────────────────────────────────────
+  # ─────────────────────────────
+  # ClickHouse Database
+  # ─────────────────────────────
   - type: pserv
     name: startup-scout-clickhouse
-    runtime: docker
+    runtime: image
+    image:
+      url: clickhouse/clickhouse-server:24.3
     plan: starter
     region: oregon
-    image: clickhouse/clickhouse-server:24.3
+
     disk:
       name: clickhouse-data
       mountPath: /var/lib/clickhouse
       sizeGB: 10
 
-  # ── Next.js dashboard + API ──────────────────────────────────────────
+  # ─────────────────────────────
+  # Web App (Next.js)
+  # ─────────────────────────────
   - type: web
     name: startup-scout
     runtime: node
     plan: free
     region: oregon
+
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/stats
+
     envVars:
       - key: NODE_VERSION
         value: "20"
+
       - key: NODE_ENV
         value: production
+
       - key: DEMO_MODE
         value: "false"
+
       - key: CLICKHOUSE_DATABASE
         value: startup_scout
+
       - key: CLICKHOUSE_USER
         value: default
+
       - key: CLICKHOUSE_PASSWORD
         value: ""
+
       - key: CLICKHOUSE_HOST
         fromService:
           type: pserv
           name: startup-scout-clickhouse
           property: hostport
+
       - key: DISCOVERY_INTERVAL_MINUTES
         value: "15"
+
       - key: SCORE_THRESHOLD
         value: "85"
+
       - key: OPENAI_API_KEY
         sync: false
+
       - key: COMPOSIO_API_KEY
         sync: false
+
       - key: GITHUB_TOKEN
         sync: false
 
-  # ── Cron: run agent pipeline every 15 minutes ────────────────────────
+  # ─────────────────────────────
+  # Cron Job (Pipeline every 15 min)
+  # ─────────────────────────────
   - type: cron
     name: startup-scout-pipeline
+    region: oregon
+    plan: free
+
     schedule: "*/15 * * * *"
+
     envVars:
       - key: STARTUP_SCOUT_URL
         fromService:
           type: web
           name: startup-scout
           property: hostport
-    command: curl -sf -X POST "http://${STARTUP_SCOUT_URL}/api/agents"
+
+    command: >
+      curl -sf -X POST "http://${STARTUP_SCOUT_URL}/api/agents"
