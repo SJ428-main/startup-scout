@@ -16,7 +16,7 @@ services:
       sizeGB: 10
 
   # ─────────────────────────────
-  # Web App (Next.js)
+  # Web App
   # ─────────────────────────────
   - type: web
     name: startup-scout
@@ -67,23 +67,3 @@ services:
 
       - key: GITHUB_TOKEN
         sync: false
-
-  # ─────────────────────────────
-  # Cron Job (Pipeline every 15 min)
-  # ─────────────────────────────
-  - type: cron
-    name: startup-scout-pipeline
-    region: oregon
-    plan: free
-
-    schedule: "*/15 * * * *"
-
-    envVars:
-      - key: STARTUP_SCOUT_URL
-        fromService:
-          type: web
-          name: startup-scout
-          property: hostport
-
-    command: >
-      curl -sf -X POST "http://${STARTUP_SCOUT_URL}/api/agents"
