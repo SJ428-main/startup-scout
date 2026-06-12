@@ -1,0 +1,25 @@
+# Render Blueprint — Demo mode (recommended for first deploy)
+# Dashboard only; in-memory store, no ClickHouse required.
+# Apply: Render Dashboard → New → Blueprint → connect this repo.
+
+services:
+  - type: web
+    name: startup-scout
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/stats
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: NODE_VERSION
+        value: "20"
+      # Optional — add in Render dashboard for live integrations
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: COMPOSIO_API_KEY
+        sync: false

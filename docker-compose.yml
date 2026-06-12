@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_DB: startup_scout
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DEMO_MODE: "false"
+      CLICKHOUSE_HOST: http://clickhouse:8123
+      CLICKHOUSE_DATABASE: startup_scout
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+  agents:
+    build: .
+    command: npm run agents:start
+    environment:
+      DEMO_MODE: "false"
+      CLICKHOUSE_HOST: http://clickhouse:8123
+      CLICKHOUSE_DATABASE: startup_scout
+      DISCOVERY_INTERVAL_MINUTES: 15
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+volumes:
+  clickhouse_data:
