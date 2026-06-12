@@ -1,68 +1,24 @@
+# Demo deploy — free, no ClickHouse, no API keys required
+# Render Dashboard → New → Blueprint → connect repo → Apply
+
 services:
-  # ─────────────────────────────
-  # ClickHouse Database
-  # ─────────────────────────────
-  - type: pserv
-    name: startup-scout-clickhouse
-    runtime: image
-    image:
-      url: clickhouse/clickhouse-server:24.3
-    plan: starter
-    region: oregon
-
-    disk:
-      name: clickhouse-data
-      mountPath: /var/lib/clickhouse
-      sizeGB: 10
-
-  # ─────────────────────────────
-  # Web App
-  # ─────────────────────────────
   - type: web
     name: startup-scout
     runtime: node
     plan: free
     region: oregon
-
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/stats
-
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
       - key: NODE_VERSION
         value: "20"
-
-      - key: DEMO_MODE
-        value: "false"
-
-      - key: CLICKHOUSE_DATABASE
-        value: startup_scout
-
-      - key: CLICKHOUSE_USER
-        value: default
-
-      - key: CLICKHOUSE_PASSWORD
-        value: ""
-
-      - key: CLICKHOUSE_HOST
-        fromService:
-          type: pserv
-          name: startup-scout-clickhouse
-          property: hostport
-
-      - key: DISCOVERY_INTERVAL_MINUTES
-        value: "15"
-
-      - key: SCORE_THRESHOLD
-        value: "85"
-
+      # Optional — leave blank for free demo
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: ANTHROPIC_MODEL
-        value: claude-3-5-haiku-20241022
-
       - key: COMPOSIO_API_KEY
-        sync: false
-
-      - key: GITHUB_TOKEN
         sync: false

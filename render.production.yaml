@@ -1,0 +1,53 @@
+# Production deploy (ClickHouse + paid plan) — not needed for demo
+# To use: rename this file to render.yaml and redeploy on Render
+
+services:
+  - type: pserv
+    name: startup-scout-clickhouse
+    runtime: image
+    image:
+      url: clickhouse/clickhouse-server:24.3
+    plan: starter
+    region: oregon
+    disk:
+      name: clickhouse-data
+      mountPath: /var/lib/clickhouse
+      sizeGB: 10
+
+  - type: web
+    name: startup-scout
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/stats
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DEMO_MODE
+        value: "false"
+      - key: CLICKHOUSE_DATABASE
+        value: startup_scout
+      - key: CLICKHOUSE_USER
+        value: default
+      - key: CLICKHOUSE_PASSWORD
+        value: ""
+      - key: CLICKHOUSE_HOST
+        fromService:
+          type: pserv
+          name: startup-scout-clickhouse
+          property: hostport
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  - type: cron
+    name: startup-scout-pipeline
+    schedule: "*/15 * * * *"
+    envVars:
+      - key: STARTUP_SCOUT_URL
+        fromService:
+          type: web
+          name: startup-scout
+          property: hostport
+    command: curl -sf -X POST "http://${STARTUP_SCOUT_URL}/api/agents"
