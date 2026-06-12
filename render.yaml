@@ -24,16 +24,13 @@ services:
     plan: free
     region: oregon
 
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/stats
 
     envVars:
       - key: NODE_VERSION
         value: "20"
-
-      - key: NODE_ENV
-        value: production
 
       - key: DEMO_MODE
         value: "false"
