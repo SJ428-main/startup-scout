@@ -1,0 +1,17 @@
+# Demo blueprint — free, no ClickHouse. Use render.demo.yaml only if you want demo mode.
+services:
+  - type: web
+    name: startup-scout
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/stats
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: NODE_VERSION
+        value: "20"

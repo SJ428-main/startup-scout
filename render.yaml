@@ -1,8 +1,23 @@
-# Render Blueprint — Demo mode (recommended for first deploy)
-# Dashboard only; in-memory store, no ClickHouse required.
-# Apply: Render Dashboard → New → Blueprint → connect this repo.
+# Render Blueprint — Production (DEMO_MODE=false + ClickHouse)
+# Apply: Render Dashboard → New → Blueprint → connect repo → Apply
+#
+# Cost note: ClickHouse private service needs a paid plan (~$7+/mo for disk).
+# Web service can use the free tier.
 
 services:
+  # ── ClickHouse database ──────────────────────────────────────────────
+  - type: pserv
+    name: startup-scout-clickhouse
+    runtime: docker
+    plan: starter
+    region: oregon
+    image: clickhouse/clickhouse-server:24.3
+    disk:
+      name: clickhouse-data
+      mountPath: /var/lib/clickhouse
+      sizeGB: 10
+
+  # ── Next.js dashboard + API ──────────────────────────────────────────
   - type: web
     name: startup-scout
     runtime: node
@@ -12,14 +27,42 @@ services:
     startCommand: npm start
     healthCheckPath: /api/stats
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: NODE_ENV
         value: production
       - key: DEMO_MODE
-        value: "true"
-      - key: NODE_VERSION
-        value: "20"
-      # Optional — add in Render dashboard for live integrations
+        value: "false"
+      - key: CLICKHOUSE_DATABASE
+        value: startup_scout
+      - key: CLICKHOUSE_USER
+        value: default
+      - key: CLICKHOUSE_PASSWORD
+        value: ""
+      - key: CLICKHOUSE_HOST
+        fromService:
+          type: pserv
+          name: startup-scout-clickhouse
+          property: hostport
+      - key: DISCOVERY_INTERVAL_MINUTES
+        value: "15"
+      - key: SCORE_THRESHOLD
+        value: "85"
       - key: OPENAI_API_KEY
         sync: false
       - key: COMPOSIO_API_KEY
         sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+
+  # ── Cron: run agent pipeline every 15 minutes ────────────────────────
+  - type: cron
+    name: startup-scout-pipeline
+    schedule: "*/15 * * * *"
+    envVars:
+      - key: STARTUP_SCOUT_URL
+        fromService:
+          type: web
+          name: startup-scout
+          property: hostport
+    command: curl -sf -X POST "http://${STARTUP_SCOUT_URL}/api/agents"

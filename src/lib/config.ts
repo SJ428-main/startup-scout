@@ -40,3 +40,12 @@ export function getConfig(): Config {
 export function isDemoMode(): boolean {
   return getConfig().DEMO_MODE ?? false;
 }
+
+/** Normalizes CLICKHOUSE_HOST for Render internal host:port values. */
+export function getClickHouseUrl(): string {
+  const host = getConfig().CLICKHOUSE_HOST;
+  if (host.startsWith("http://") || host.startsWith("https://")) {
+    return host;
+  }
+  return `http://${host}`;
+}

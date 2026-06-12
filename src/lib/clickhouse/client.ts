@@ -1,5 +1,5 @@
 import { createClient, type ClickHouseClient } from "@clickhouse/client";
-import { getConfig, isDemoMode } from "@/lib/config";
+import { getConfig, getClickHouseUrl, isDemoMode } from "@/lib/config";
 
 let client: ClickHouseClient | null = null;
 
@@ -7,7 +7,7 @@ export function getClickHouseClient(): ClickHouseClient {
   if (!client) {
     const config = getConfig();
     client = createClient({
-      url: config.CLICKHOUSE_HOST,
+      url: getClickHouseUrl(),
       username: config.CLICKHOUSE_USER,
       password: config.CLICKHOUSE_PASSWORD,
       database: config.CLICKHOUSE_DATABASE,
