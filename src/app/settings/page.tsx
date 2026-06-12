@@ -23,7 +23,8 @@ export default function SettingsPage() {
     { key: "CLICKHOUSE_HOST", value: "http://localhost:8123" },
     { key: "DISCOVERY_INTERVAL_MINUTES", value: "15" },
     { key: "SCORE_THRESHOLD", value: "85" },
-    { key: "OPENAI_API_KEY", value: "••••••••" },
+    { key: "ANTHROPIC_API_KEY", value: "••••••••" },
+    { key: "ANTHROPIC_MODEL", value: "claude-3-5-haiku-20241022" },
     { key: "COMPOSIO_API_KEY", value: "••••••••" },
   ];
 

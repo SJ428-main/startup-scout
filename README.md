@@ -97,7 +97,8 @@ reports/             # Generated cited.md files
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DEMO_MODE` | `true` | In-memory store, no external deps |
-| `OPENAI_API_KEY` | — | Live AI analysis |
+| `ANTHROPIC_API_KEY` | — | Live AI analysis (Claude) |
+| `ANTHROPIC_MODEL` | `claude-3-5-haiku-20241022` | Claude model to use |
 | `COMPOSIO_API_KEY` | — | Live Slack/Gmail/Notion/GitHub |
 | `CLICKHOUSE_HOST` | `http://localhost:8123` | Production database |
 | `SCORE_THRESHOLD` | `85` | Action agent trigger threshold |

@@ -9,7 +9,7 @@ This deploys Startup Scout with **real ClickHouse storage** and **DEMO_MODE=fals
 | GitHub account | Free |
 | Render account | Free to sign up |
 | **Cost** | ClickHouse on Render needs a **paid** private service (~**$7/month** minimum). The web app can stay on the free tier. |
-| OpenAI | **Not required** |
+| Claude (Anthropic) | **Not required** |
 
 ---
 

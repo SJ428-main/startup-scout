@@ -59,8 +59,10 @@ services:
       - key: SCORE_THRESHOLD
         value: "85"
 
-      - key: OPENAI_API_KEY
+      - key: ANTHROPIC_API_KEY
         sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-3-5-haiku-20241022
 
       - key: COMPOSIO_API_KEY
         sync: false

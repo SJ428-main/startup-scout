@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { getConfig, isDemoMode } from "@/lib/config";
 
 export interface AnalysisResult {
@@ -25,6 +25,13 @@ const DEMO_ANALYSIS: AnalysisResult = {
   technology: "LLM orchestration, vector search, TypeScript SDK",
 };
 
+function parseAnalysisJson(raw: string): AnalysisResult {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const json = fenced ? fenced[1].trim() : trimmed;
+  return JSON.parse(json) as AnalysisResult;
+}
+
 export async function analyzeStartup(company: {
   name: string;
   description: string;
@@ -49,26 +56,24 @@ GitHub Stars: ${company.github_stars ?? "unknown"}
 HN Points: ${company.hn_points ?? "unknown"}
 Funding: ${company.funding_news ?? "none found"}`;
 
-  if (config.OPENAI_API_KEY) {
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a startup analyst. Return valid JSON only, no markdown.",
-        },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
+  if (config.ANTHROPIC_API_KEY) {
+    const client = new Anthropic({ apiKey: config.ANTHROPIC_API_KEY });
+    const model =
+      config.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022";
+
+    const response = await client.messages.create({
+      model,
+      max_tokens: 1024,
+      system:
+        "You are a startup analyst. Return valid JSON only, no markdown fences or extra text.",
+      messages: [{ role: "user", content: prompt }],
     });
-    const content = response.choices[0]?.message?.content ?? "{}";
-    return JSON.parse(content) as AnalysisResult;
+
+    const block = response.content.find((b) => b.type === "text");
+    const content = block?.type === "text" ? block.text : "{}";
+    return parseAnalysisJson(content);
   }
 
-  // Fallback heuristic analysis without API key
   return {
     summary: `${company.name} shows promising signals in the AI space with ${company.github_stars ?? 0} GitHub stars.`,
     strengths: ["Open source presence", "Community traction"],
