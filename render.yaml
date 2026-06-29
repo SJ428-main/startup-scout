@@ -19,8 +19,3 @@ services:
         value: "true"
       - key: NODE_VERSION
         value: "20"
-      # Optional — leave blank for free demo
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: COMPOSIO_API_KEY
-        sync: false
