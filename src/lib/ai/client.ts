@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { getConfig, isDemoMode } from "@/lib/config";
 
 export interface AnalysisResult {
@@ -47,8 +46,7 @@ export async function analyzeStartup(company: {
     };
   }
 
-  const config = getConfig();
-  const prompt = `Analyze this AI startup and return JSON with keys: summary, strengths (array), risks (array), market, technology.
+  const prompt = `Analyze this AI startup and return a JSON object with exactly these keys: summary (string), strengths (string array, 2-4 items), risks (string array, 2-3 items), market (string), technology (string). Return only valid JSON, no markdown.
 
 Company: ${company.name}
 Description: ${company.description}
@@ -56,24 +54,26 @@ GitHub Stars: ${company.github_stars ?? "unknown"}
 HN Points: ${company.hn_points ?? "unknown"}
 Funding: ${company.funding_news ?? "none found"}`;
 
-  if (config.ANTHROPIC_API_KEY) {
-    const client = new Anthropic({ apiKey: config.ANTHROPIC_API_KEY });
-    const model =
-      config.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022";
+  const config = getConfig();
 
-    const response = await client.messages.create({
-      model,
-      max_tokens: 1024,
-      system:
-        "You are a startup analyst. Return valid JSON only, no markdown fences or extra text.",
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const block = response.content.find((b) => b.type === "text");
-    const content = block?.type === "text" ? block.text : "{}";
-    return parseAnalysisJson(content);
+  // Try Gemini first (free)
+  if (config.GEMINI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generationConfig: { responseMimeType: "application/json" },
+      });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      return parseAnalysisJson(text);
+    } catch (err) {
+      console.error("[AI] Gemini failed, trying fallback:", err);
+    }
   }
 
+  // Heuristic fallback — no API key configured
   return {
     summary: `${company.name} shows promising signals in the AI space with ${company.github_stars ?? 0} GitHub stars.`,
     strengths: ["Open source presence", "Community traction"],

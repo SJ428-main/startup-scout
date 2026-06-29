@@ -69,7 +69,7 @@ export async function updateCompanyStatus(
     return;
   }
   await query(
-    `ALTER TABLE companies UPDATE status = {status:String} WHERE id = {id:String}`,
+    `UPDATE companies SET status = {status:String} WHERE id = {id:String}`,
     { status, id }
   );
 }
@@ -172,7 +172,10 @@ export async function createAgentRun(
     error_message: null,
     metadata: {},
   };
-  await insert("agent_runs", [run as unknown as Record<string, unknown>]);
+  await insert("agent_runs", [{
+    ...run,
+    metadata: JSON.stringify(run.metadata),
+  } as unknown as Record<string, unknown>]);
   return run;
 }
 
@@ -194,16 +197,20 @@ export async function completeAgentRun(
     return;
   }
   await query(
-    `ALTER TABLE agent_runs UPDATE status = {status:String}, completed_at = now64(3), items_processed = {items:UInt32}, error_message = {error:Nullable(String)} WHERE id = {id:String}`,
+    `UPDATE agent_runs SET status = {status:String}, completed_at = NOW(), items_processed = {items:UInt32}, error_message = {error:String} WHERE id = {id:String}`,
     { id, status, items: itemsProcessed, error: error ?? null }
   );
 }
 
 export async function getAgentRuns(limit = 50): Promise<AgentRun[]> {
-  return query<AgentRun>(
+  const rows = await query<AgentRun & { metadata: string }>(
     `SELECT * FROM agent_runs ORDER BY started_at DESC LIMIT {limit:UInt32}`,
     { limit }
   );
+  return rows.map((r) => ({
+    ...r,
+    metadata: typeof r.metadata === "string" ? JSON.parse(r.metadata) : (r.metadata ?? {}),
+  }));
 }
 
 export async function insertNotification(
@@ -261,7 +268,7 @@ export async function getDashboardStats(): Promise<{
 }> {
   const [companies, scores, runs, notifications] = await Promise.all([
     query<{ count: number }>(`SELECT count() as count FROM companies`),
-    query<{ max_score: number }>(`SELECT max(total_score) as max_score FROM scores`),
+    query<{ max_score: number | null }>(`SELECT MAX(total_score) as max_score FROM scores`),
     query<{ count: number }>(`SELECT count() as count FROM agent_runs`),
     query<{ count: number }>(`SELECT count() as count FROM notifications`),
   ]);
@@ -269,6 +276,7 @@ export async function getDashboardStats(): Promise<{
   return {
     totalCompanies: companies[0]?.count ?? 0,
     topScore: scores[0]?.max_score ?? 0,
+
     agentRunsToday: runs[0]?.count ?? 0,
     notificationsSent: notifications[0]?.count ?? 0,
   };

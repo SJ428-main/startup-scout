@@ -5,10 +5,8 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v !== "false"),
-  CLICKHOUSE_HOST: z.string().default("http://localhost:8123"),
-  CLICKHOUSE_USER: z.string().default("default"),
-  CLICKHOUSE_PASSWORD: z.string().default(""),
-  CLICKHOUSE_DATABASE: z.string().default("startup_scout"),
+  DATABASE_URL: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().optional().default("claude-3-5-haiku-20241022"),
   COMPOSIO_API_KEY: z.string().optional(),
@@ -40,11 +38,7 @@ export function isDemoMode(): boolean {
   return getConfig().DEMO_MODE ?? false;
 }
 
-/** Normalizes CLICKHOUSE_HOST for Render internal host:port values. */
+/** Kept for backwards compat with any callers — no longer used for ClickHouse. */
 export function getClickHouseUrl(): string {
-  const host = getConfig().CLICKHOUSE_HOST;
-  if (host.startsWith("http://") || host.startsWith("https://")) {
-    return host;
-  }
-  return `http://${host}`;
+  return process.env.CLICKHOUSE_HOST ?? "http://localhost:8123";
 }

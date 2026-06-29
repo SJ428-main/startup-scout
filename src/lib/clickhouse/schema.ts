@@ -1,93 +1,82 @@
 export const INIT_SQL = `
-CREATE DATABASE IF NOT EXISTS startup_scout;
+CREATE TABLE IF NOT EXISTS companies (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  website TEXT NOT NULL DEFAULT '',
+  github_url TEXT NOT NULL DEFAULT '',
+  launch_date DATE,
+  source_urls TEXT[] NOT NULL DEFAULT '{}',
+  source_type TEXT NOT NULL DEFAULT 'github_trending',
+  discovered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  status TEXT NOT NULL DEFAULT 'discovered'
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.companies (
-  id String,
-  name String,
-  description String,
-  website String,
-  github_url String,
-  launch_date Date,
-  source_urls Array(String),
-  source_type LowCardinality(String),
-  discovered_at DateTime64(3),
-  status LowCardinality(String) DEFAULT 'discovered'
-) ENGINE = MergeTree()
-ORDER BY (discovered_at, id);
+CREATE TABLE IF NOT EXISTS research (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  summary TEXT NOT NULL DEFAULT '',
+  strengths TEXT[] NOT NULL DEFAULT '{}',
+  risks TEXT[] NOT NULL DEFAULT '{}',
+  market TEXT NOT NULL DEFAULT '',
+  technology TEXT NOT NULL DEFAULT '',
+  github_stars INTEGER NOT NULL DEFAULT 0,
+  recent_commits INTEGER NOT NULL DEFAULT 0,
+  hn_points INTEGER NOT NULL DEFAULT 0,
+  ph_ranking INTEGER,
+  funding_news TEXT NOT NULL DEFAULT '',
+  hiring_page TEXT NOT NULL DEFAULT '',
+  analyzed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.articles (
-  id String,
-  company_id String,
-  title String,
-  url String,
-  source String,
-  published_at DateTime64(3),
-  snippet String
-) ENGINE = MergeTree()
-ORDER BY (published_at, id);
+CREATE TABLE IF NOT EXISTS scores (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  total_score REAL NOT NULL DEFAULT 0,
+  github_activity REAL NOT NULL DEFAULT 0,
+  community_interest REAL NOT NULL DEFAULT 0,
+  recent_launches REAL NOT NULL DEFAULT 0,
+  hiring_signal REAL NOT NULL DEFAULT 0,
+  technical_innovation REAL NOT NULL DEFAULT 0,
+  momentum REAL NOT NULL DEFAULT 0,
+  scored_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  triggered_action BOOLEAN NOT NULL DEFAULT FALSE
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.scores (
-  id String,
-  company_id String,
-  total_score Float32,
-  github_activity Float32,
-  community_interest Float32,
-  recent_launches Float32,
-  hiring_signal Float32,
-  technical_innovation Float32,
-  momentum Float32,
-  scored_at DateTime64(3),
-  triggered_action UInt8 DEFAULT 0
-) ENGINE = MergeTree()
-ORDER BY (scored_at, company_id);
+CREATE TABLE IF NOT EXISTS agent_runs (
+  id TEXT PRIMARY KEY,
+  agent_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'running',
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  items_processed INTEGER NOT NULL DEFAULT 0,
+  error_message TEXT,
+  metadata TEXT NOT NULL DEFAULT '{}'
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.agent_runs (
-  id String,
-  agent_type LowCardinality(String),
-  status LowCardinality(String),
-  started_at DateTime64(3),
-  completed_at Nullable(DateTime64(3)),
-  items_processed UInt32 DEFAULT 0,
-  error_message Nullable(String),
-  metadata String DEFAULT '{}'
-) ENGINE = MergeTree()
-ORDER BY (started_at, id);
+CREATE TABLE IF NOT EXISTS notifications (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  status TEXT NOT NULL,
+  payload TEXT NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.notifications (
-  id String,
-  company_id String,
-  channel LowCardinality(String),
-  status LowCardinality(String),
-  payload String,
-  created_at DateTime64(3)
-) ENGINE = MergeTree()
-ORDER BY (created_at, id);
+CREATE TABLE IF NOT EXISTS sources (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  url TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  last_fetched_at TIMESTAMPTZ
+);
 
-CREATE TABLE IF NOT EXISTS startup_scout.sources (
-  id String,
-  name String,
-  type LowCardinality(String),
-  url String,
-  enabled UInt8 DEFAULT 1,
-  last_fetched_at Nullable(DateTime64(3))
-) ENGINE = MergeTree()
-ORDER BY (type, id);
-
-CREATE TABLE IF NOT EXISTS startup_scout.research (
-  id String,
-  company_id String,
-  summary String,
-  strengths Array(String),
-  risks Array(String),
-  market String,
-  technology String,
-  github_stars UInt32 DEFAULT 0,
-  recent_commits UInt32 DEFAULT 0,
-  hn_points UInt32 DEFAULT 0,
-  ph_ranking Nullable(UInt32),
-  funding_news String DEFAULT '',
-  hiring_page String DEFAULT '',
-  analyzed_at DateTime64(3)
-) ENGINE = MergeTree()
-ORDER BY (analyzed_at, company_id);
+INSERT INTO sources (id, name, type, url, enabled) VALUES
+  ('src-github', 'GitHub Trending', 'github_trending', 'https://github.com/trending', TRUE),
+  ('src-hn',     'Hacker News',    'hacker_news',     'https://news.ycombinator.com', TRUE),
+  ('src-ph',     'Product Hunt',   'product_hunt',    'https://www.producthunt.com', TRUE),
+  ('src-rss',    'LangChain Blog', 'rss',             'https://blog.langchain.dev/rss/', TRUE),
+  ('src-openai', 'OpenAI Blog',    'ai_blog',         'https://openai.com/blog/rss.xml', TRUE)
+ON CONFLICT (id) DO NOTHING;
 `;

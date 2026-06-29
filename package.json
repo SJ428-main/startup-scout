@@ -25,12 +25,12 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "agents:start": "tsx src/agents/orchestrator.ts",
-    "db:init": "tsx scripts/init-clickhouse.ts",
+    "db:init": "tsx scripts/init-db.ts",
     "demo": "cross-env DEMO_MODE=true tsx scripts/run-demo.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@clickhouse/client": "^1.8.1",
+    "@google/generative-ai": "^0.21.0",
+    "@neondatabase/serverless": "^0.10.4",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "autoprefixer": "^10.4.20",
