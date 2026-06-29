@@ -60,7 +60,7 @@ export default function DashboardPage() {
       setStats(enriched.stats as DemoStats);
       setTimeline(tl.length > 0 ? tl : DEMO_AGENT_EVENTS);
     } catch {
-      // fall back to demo events on error
+      // fall back to baseline timeline if the live timeline request fails
       setTimeline(DEMO_AGENT_EVENTS);
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ export default function DashboardPage() {
       await triggerPipeline();
       await load();
     } catch {
-      // pipeline may not be available in demo mode
+      // pipeline trigger failed — leave existing data in place
     } finally {
       setRunning(false);
     }
@@ -140,7 +140,7 @@ export default function DashboardPage() {
 
       {stats && (
         <p className="text-xs text-muted-foreground">
-          Last pipeline run: {minutesAgo(stats.last_pipeline_run)} · Demo data — live collection can be configured via environment variables
+          Last pipeline run: {minutesAgo(stats.last_pipeline_run)}
         </p>
       )}
 

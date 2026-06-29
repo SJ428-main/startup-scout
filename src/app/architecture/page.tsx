@@ -18,8 +18,8 @@ const PIPELINE_STEPS = [
 const DATA_SOURCES = [
   { icon: Github, name: "GitHub Trending", desc: "Daily trending repositories filtered for AI agents, ML infrastructure, and developer tooling.", badge: "Live" },
   { icon: TrendingUp, name: "Hacker News", desc: "Top stories and Show HN posts mentioning AI startups, filtered by keyword and point threshold.", badge: "Live" },
-  { icon: Bell, name: "Product Hunt", desc: "New product launches tagged with AI, developer tools, and open-source — ranked by upvotes.", badge: "Live" },
-  { icon: Rss, name: "RSS / Blogs", desc: "Engineering blogs from LangChain, OpenAI, Anthropic, and other AI-ecosystem publishers.", badge: "Configured" },
+  { icon: Bell, name: "Product Hunt", desc: "New product launches tagged with AI, developer tools, and open-source — ranked by upvotes.", badge: "Curated" },
+  { icon: Rss, name: "RSS / Blogs", desc: "Engineering blogs from LangChain, OpenAI, Anthropic, and other AI-ecosystem publishers.", badge: "Curated" },
 ];
 
 const TECH_STACK = [
@@ -94,7 +94,7 @@ export default function ArchitecturePage() {
           })}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Demo data represents realistic signals collected from these sources. Live connectors can be configured via environment variables.
+          Live connectors pull from the GitHub and Hacker News APIs. A curated baseline dataset fills in until the discovery pipeline has run.
         </p>
       </motion.div>
 

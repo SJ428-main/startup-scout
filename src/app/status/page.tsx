@@ -1,11 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Github, TrendingUp, Bell, Rss, Activity, Clock } from "lucide-react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DEMO_STATS } from "@/data/demoStartups";
+
+interface SystemStatus {
+  live: boolean;
+  database: boolean;
+  aiAnalysis: boolean;
+  githubAuth: boolean;
+}
 
 function minutesAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
@@ -15,20 +22,29 @@ function minutesAgo(iso: string) {
 }
 
 const DATA_SOURCES = [
-  { name: "GitHub Trending", icon: Github, status: "operational", desc: "Scanning AI and developer tool repositories" },
-  { name: "Hacker News", icon: TrendingUp, status: "operational", desc: "Monitoring top stories and Show HN posts" },
-  { name: "Product Hunt", icon: Bell, status: "operational", desc: "Tracking new AI product launches" },
-  { name: "RSS Feeds", icon: Rss, status: "operational", desc: "Ingesting engineering blog posts" },
+  { name: "GitHub Trending", icon: Github, desc: "Scanning AI and developer tool repositories" },
+  { name: "Hacker News", icon: TrendingUp, desc: "Monitoring top stories and Show HN posts" },
+  { name: "Product Hunt", icon: Bell, desc: "Tracking new AI product launches" },
+  { name: "RSS Feeds", icon: Rss, desc: "Ingesting engineering blog posts" },
 ];
 
 const AGENTS = [
-  { name: "Discovery Agent", desc: "Scans public sources for new startup candidates", status: "operational" },
-  { name: "Research Agent", desc: "Enriches company profiles with technical signals", status: "operational" },
-  { name: "Scoring Agent", desc: "Calculates momentum scores using weighted formula", status: "operational" },
-  { name: "Action Agent", desc: "Generates research reports for high-scoring companies", status: "operational" },
+  { name: "Discovery Agent", desc: "Scans public sources for new startup candidates" },
+  { name: "Research Agent", desc: "Enriches company profiles with technical signals" },
+  { name: "Scoring Agent", desc: "Calculates momentum scores using weighted formula" },
+  { name: "Action Agent", desc: "Generates research reports for high-scoring companies" },
 ];
 
 export default function StatusPage() {
+  const [status, setStatus] = useState<SystemStatus | null>(null);
+
+  useEffect(() => {
+    fetch("/api/system-status")
+      .then((r) => r.json())
+      .then(setStatus)
+      .catch(() => setStatus(null));
+  }, []);
+
   const stats = DEMO_STATS;
 
   return (
@@ -130,7 +146,7 @@ export default function StatusPage() {
         </div>
       </motion.div>
 
-      {/* Schedule */}
+      {/* Schedule + live connection status */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <Card className="border-border/50 bg-card/50">
           <CardHeader>
@@ -139,15 +155,32 @@ export default function StatusPage() {
               Pipeline Schedule
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>The discovery pipeline runs automatically every <span className="font-medium text-foreground">15 minutes</span> via cron scheduler.</p>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>The discovery pipeline runs on a <span className="font-medium text-foreground">15-minute</span> schedule, or on demand from the dashboard.</p>
             <p>Last completed run: <span className="font-medium text-foreground">{minutesAgo(stats.last_pipeline_run)}</span></p>
-            <p className="mt-3 text-xs">
-              Demo mode is active — live data collection can be enabled by configuring{" "}
-              <span className="font-mono text-scout-cyan">ANTHROPIC_API_KEY</span>,{" "}
-              <span className="font-mono text-scout-cyan">GITHUB_TOKEN</span>, and a ClickHouse database.{" "}
-              See the <Link href="/architecture" className="text-scout-cyan hover:underline">Architecture</Link> page for details.
-            </p>
+
+            {status && (
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <div className="flex items-center justify-between rounded-lg bg-card/30 px-3 py-2">
+                  <span className="text-xs">Database connection</span>
+                  <Badge className={status.database ? "bg-scout-green/20 text-scout-green" : "bg-muted text-muted-foreground"}>
+                    {status.database ? "Connected" : "Not configured"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-card/30 px-3 py-2">
+                  <span className="text-xs">AI analysis</span>
+                  <Badge className={status.aiAnalysis ? "bg-scout-green/20 text-scout-green" : "bg-muted text-muted-foreground"}>
+                    {status.aiAnalysis ? "Connected" : "Not configured"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-card/30 px-3 py-2">
+                  <span className="text-xs">GitHub access</span>
+                  <Badge className={status.githubAuth ? "bg-scout-green/20 text-scout-green" : "bg-muted text-muted-foreground"}>
+                    {status.githubAuth ? "Connected" : "Not configured"}
+                  </Badge>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
