@@ -6,18 +6,6 @@ An autonomous multi-agent system that discovers, researches, and ranks AI startu
 
 ---
 
-## Resume Bullets
-
-> Copy these directly into a CV or job application.
-
-- **Built Startup Scout**, a full-stack startup intelligence dashboard that analyzes public developer and product signals to identify early-stage companies with strong technical momentum.
-- **Implemented an explainable 0–100 scoring engine** with 5 weighted dimensions: GitHub growth (35%), engineering activity (25%), community engagement (15%), product traction (15%), and hiring signals (10%).
-- **Designed a demo-safe fallback data layer** (25 real open-source startups) so the deployed app remains fully functional even when external APIs or background workers are unavailable.
-- **Deployed a production-ready Next.js 15 app** on Render with standalone Docker output, ClickHouse integration, and autonomous agent scheduling via node-cron.
-- **Architected a 4-agent autonomous pipeline** (Discovery → Research → Scoring → Action) that runs on a cron schedule and generates explainable research reports for high-signal companies.
-
----
-
 ## What it does
 
 Four agents run in a sequential pipeline, each handing off to the next:
