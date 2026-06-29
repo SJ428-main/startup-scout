@@ -24,16 +24,6 @@ export interface Company {
   status: "discovered" | "researched" | "scored" | "actioned";
 }
 
-export interface Article {
-  id: string;
-  company_id: string;
-  title: string;
-  url: string;
-  source: string;
-  published_at: string;
-  snippet: string;
-}
-
 export interface ResearchAnalysis {
   id: string;
   company_id: string;
@@ -103,15 +93,3 @@ export interface AgentTimelineEvent {
   details: string;
 }
 
-export interface DashboardStats {
-  totalCompanies: number;
-  topScore: number;
-  agentRunsToday: number;
-  notificationsSent: number;
-  activeAgents: number;
-}
-
-export interface DiscoveredStartup extends Company {
-  score?: number;
-  analysis?: ResearchAnalysis;
-}

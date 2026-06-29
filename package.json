@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Autonomous multi-agent system that discovers, analyzes, and ranks AI startups",
   "license": "MIT",
-  "author": "",
+  "author": "SJ428-main",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/startup-scout.git"
+    "url": "https://github.com/SJ428-main/startup-scout.git"
   },
   "keywords": [
     "ai-agents",

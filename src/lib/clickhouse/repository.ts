@@ -1,4 +1,3 @@
-const uuid = () => crypto.randomUUID();
 import { insert, query } from "./client";
 import type {
   AgentRun,
@@ -9,6 +8,8 @@ import type {
   Source,
   StartupScore,
 } from "@/types";
+
+const uuid = () => crypto.randomUUID();
 
 export async function getCompanies(limit = 50): Promise<Company[]> {
   return query<Company>(

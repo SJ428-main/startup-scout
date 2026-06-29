@@ -149,9 +149,6 @@ export async function fetchHackerNews(): Promise<RawDiscovery[]> {
 }
 
 export async function fetchProductHunt(): Promise<RawDiscovery[]> {
-  if (isDemoMode()) {
-    return DEMO_DISCOVERIES.filter((d) => d.source_type === "product_hunt");
-  }
   return DEMO_DISCOVERIES.filter((d) => d.source_type === "product_hunt");
 }
 

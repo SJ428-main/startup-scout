@@ -56,6 +56,9 @@ export function getDemoStore(): DemoStoreApi {
       const s = sql.toLowerCase();
 
       if (s.includes("from companies")) {
+        if (s.includes("count()")) {
+          return [{ count: store!.companies.length }] as T[];
+        }
         if (s.includes("order by discovered_at desc")) {
           return [...store!.companies].reverse() as T[];
         }
@@ -72,6 +75,13 @@ export function getDemoStore(): DemoStoreApi {
       }
 
       if (s.includes("from scores")) {
+        if (s.includes("max(total_score)")) {
+          const max = store!.scores.reduce(
+            (m, sc) => Math.max(m, sc.total_score),
+            0
+          );
+          return [{ max_score: max }] as T[];
+        }
         if (s.includes("order by total_score desc")) {
           return [...store!.scores].sort(
             (a, b) => b.total_score - a.total_score
@@ -95,6 +105,9 @@ export function getDemoStore(): DemoStoreApi {
       }
 
       if (s.includes("from agent_runs")) {
+        if (s.includes("count()")) {
+          return [{ count: store!.agent_runs.length }] as T[];
+        }
         const runs = [...store!.agent_runs].sort(
           (a, b) =>
             new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
@@ -107,31 +120,14 @@ export function getDemoStore(): DemoStoreApi {
       }
 
       if (s.includes("from notifications")) {
+        if (s.includes("count()")) {
+          return [{ count: store!.notifications.length }] as T[];
+        }
         return [...store!.notifications].reverse() as T[];
       }
 
       if (s.includes("from sources")) {
         return store!.sources as T[];
-      }
-
-      if (s.includes("count()")) {
-        if (s.includes("from companies")) {
-          return [{ count: store!.companies.length }] as T[];
-        }
-        if (s.includes("from agent_runs")) {
-          return [{ count: store!.agent_runs.length }] as T[];
-        }
-        if (s.includes("from notifications")) {
-          return [{ count: store!.notifications.length }] as T[];
-        }
-      }
-
-      if (s.includes("max(total_score)")) {
-        const max = store!.scores.reduce(
-          (m, sc) => Math.max(m, sc.total_score),
-          0
-        );
-        return [{ max_score: max }] as T[];
       }
 
       return [];

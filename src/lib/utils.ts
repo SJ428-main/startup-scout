@@ -21,11 +21,3 @@ export function scoreColor(score: number): string {
   if (score >= 50) return "text-scout-amber";
   return "text-muted-foreground";
 }
-
-export function scoreBadgeVariant(
-  score: number
-): "default" | "secondary" | "destructive" | "outline" {
-  if (score >= 85) return "default";
-  if (score >= 70) return "secondary";
-  return "outline";
-}

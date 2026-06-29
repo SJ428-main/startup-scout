@@ -6,9 +6,8 @@ import {
   insertScore,
   updateCompanyStatus,
 } from "@/lib/clickhouse/repository";
-import { getConfig } from "@/lib/config";
+import { getConfig, isDemoMode } from "@/lib/config";
 import { addDemoTimelineEvent } from "@/lib/demo/store";
-import { isDemoMode } from "@/lib/config";
 const uuid = () => crypto.randomUUID();
 import { runActionAgent } from "./action";
 
