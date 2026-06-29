@@ -9,7 +9,7 @@ services:
     plan: free
     region: oregon
     buildCommand: npm ci && npm run build
-    startCommand: node .next/standalone/server.js
+    startCommand: npm start
     healthCheckPath: /api/stats
     envVars:
       - key: NODE_ENV
@@ -20,10 +20,6 @@ services:
         value: "false"
       - key: NODE_VERSION
         value: "20"
-      - key: HOSTNAME
-        value: "0.0.0.0"
-      - key: PORT
-        value: "10000"
       - key: DISCOVERY_INTERVAL_MINUTES
         value: "15"
       - key: SCORE_THRESHOLD
