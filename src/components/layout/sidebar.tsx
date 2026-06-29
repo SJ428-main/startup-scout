@@ -10,6 +10,7 @@ import {
   ScrollText,
   Settings,
   Radar,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +20,8 @@ const navItems = [
   { href: "/ranked", label: "Top Ranked", icon: Trophy },
   { href: "/agents", label: "Agent Activity", icon: Activity },
   { href: "/logs", label: "Logs", icon: ScrollText },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/architecture", label: "Architecture", icon: BookOpen },
+  { href: "/status", label: "System Status", icon: Settings },
 ];
 
 export function Sidebar() {

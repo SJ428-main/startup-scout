@@ -1,4 +1,5 @@
 import type { AgentRun, Company, Notification, StartupScore } from "@/types";
+import type { EnrichedStartup } from "@/types/enriched";
 
 const base = "";
 
@@ -58,5 +59,30 @@ export async function fetchTimeline() {
 export async function triggerPipeline() {
   const res = await fetch(`${base}/api/agents`, { method: "POST" });
   if (!res.ok) throw new Error("Failed to trigger pipeline");
+  return res.json();
+}
+
+export async function fetchEnrichedStartups(params?: {
+  q?: string;
+  category?: string;
+  source?: string;
+  minScore?: string;
+  sort?: string;
+}): Promise<{ startups: EnrichedStartup[]; stats: Record<string, unknown> }> {
+  const query = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries(params ?? {}).filter(([, v]) => v !== undefined && v !== "")
+    ) as Record<string, string>
+  ).toString();
+  const res = await fetch(`${base}/api/enriched${query ? `?${query}` : ""}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch enriched startups");
+  return res.json();
+}
+
+export async function fetchEnrichedStartup(slug: string): Promise<EnrichedStartup> {
+  const res = await fetch(`${base}/api/enriched/${slug}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Not found");
   return res.json();
 }
